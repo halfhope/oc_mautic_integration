@@ -2,7 +2,7 @@
 <modification>
 	<name>Mautic integration</name>
 	<code>mautic_integration</code>
-	<version>1.1</version>
+	<version>1.1.1</version>
 	<author>halfhope</author>
 	<link>http://shtt.blog</link>
 	<file path="catalog/model/account/customer.php">

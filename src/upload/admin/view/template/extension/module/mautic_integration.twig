@@ -86,12 +86,12 @@ button.btn {
 	</div>
 	<div class="container-fluid">
 		{% if error_warning %}
-		<div class="alert alert-danger alert-dismissible" data-countdown><i class="fa fa-exclamation-circle"></i>&nbsp;<span class="countdown">[2]</span> {{ error_warning }}
+		<div class="alert alert-danger alert-dismissible"><i class="fa fa-exclamation-circle"></i>&nbsp;{{ error_warning }}
 			<button type="button" class="close" data-dismiss="alert">&times;</button>
 		</div>
 		{% endif %}
 		{% if success %}
-		<div class="alert alert-success alert-dismissible" data-countdown><i class="fa fa-check-circle"></i>&nbsp;<span class="countdown">[2]</span> {{ success }}
+		<div class="alert alert-success alert-dismissible"><i class="fa fa-check-circle"></i>&nbsp;{{ success }}
 			<button type="button" class="close" data-dismiss="alert">&times;</button>
 		</div>
 		{% endif %}
@@ -373,7 +373,7 @@ button.btn {
 									</div>
 									{% set field_row = field_row + 1 %}
 									{% endfor %}
-
+									
 									<button class="btn btn-success" id="button_add_mautic_field" {{ mautic_fields is empty ? 'disabled' : '' }}>{{ button_add }}</button>
 
 								</div>
@@ -413,16 +413,6 @@ let logObserver = null;
 let field_row = {{ field_row }};
 
 $(document).ready(() => {
-	{# $('[data-countdown]').each((index, value) => {
-		let tid = setInterval(() => {
-			let current = parseInt($(value).find('.countdown').text().match(/(\d+)/));
-			$(value).find('.countdown').text('[' + (current - 1) + ']');
-			if (current == 1) {
-				clearInterval(tid);
-				$(value).remove();
-			}
-		}, 1000);
-	}); #}
 	$('#login_button').on('click', (event) => {
 		_stop(event);
 		window.location.href = '{{ mautic_auth_url }}';

@@ -11,7 +11,7 @@ class ControllerExtensionModuleMauticIntegration extends Controller {
 
 	private $_route = 'extension/module/mautic_integration';
 	private $_model = 'model_extension_module_mautic_integration';
-	private $_version = '1.1';
+	private $_version = '1.1.1';
 
 	private $ml; // Mautic Log instance
 	private $mi; // Mautic Integration library instance 
@@ -64,7 +64,11 @@ class ControllerExtensionModuleMauticIntegration extends Controller {
 			$this->response->redirect($this->url->link($this->_route, 'user_token=' . $this->session->data['user_token'], true));
 		}
 
-		if (isset($this->error['warning'])) {
+		if (isset($this->session->data['error'])) {
+			$data['error_warning'] = $this->session->data['error'];
+
+			unset($this->session->data['error']);
+		} elseif (isset($this->error['warning'])) {
 			$data['error_warning'] = $this->error['warning'];
 		} else {
 			$data['error_warning'] = '';
@@ -312,6 +316,20 @@ class ControllerExtensionModuleMauticIntegration extends Controller {
 		$this->response->redirect($this->url->link($this->_route, 'user_token=' . $this->session->data['user_token'], true));
 	}
 
+	private function incrementSessionParam($param) {
+		if (!isset($this->session->data[$param])) {
+			$this->session->data[$param] = 1;
+		} else {
+			$this->session->data[$param]++;
+		}
+	}
+	
+	private function getSessionParam($param) {
+		$result = isset($this->session->data[$param]) ? $this->session->data[$param] : 0;
+		unset($this->session->data[$param]);
+		return $result;
+	}
+
 	public function exportContacts() {
 		$this->load->model($this->_route);
 		$this->load->language($this->_route);
@@ -346,18 +364,21 @@ class ControllerExtensionModuleMauticIntegration extends Controller {
 
 				if (isset($customer_data['customer.email'])) {
 					if (!filter_var($customer_data['customer.email'], FILTER_VALIDATE_EMAIL)) {
+						$this->incrementSessionParam('contacts_not_synced');
 						$this->ml->write(sprintf($this->language->get('error_invalid_email'), $customer_id, $customer_data['customer.email']));
 						continue;
 					}
 				}
 
-				if (!isset($this->session->data['contacts_synced'])) {
-					$this->session->data['contacts_synced'] = 1;
+				$contact = $this->mi->mergeFieldDataMapping($mautic_fields_map, $customer_data, false);
+				if (isset($contact['email'])) {
+					$contacts[] = $contact; 
 				} else {
-					$this->session->data['contacts_synced']++;
+					$this->incrementSessionParam('contacts_not_synced');
+					$this->ml->write(sprintf($this->language->get('error_email_required'), $customer_id));
+					continue;
 				}
 
-				$contacts[] = $this->mi->mergeFieldDataMapping($mautic_fields_map, $customer_data, false);
 				if (count($contacts) == 200 || $value == $last_contact) {
 
 					$response = $contactApi->createBatch($contacts);
@@ -370,6 +391,7 @@ class ControllerExtensionModuleMauticIntegration extends Controller {
 								$this->ml->write(sprintf($this->language->get('error_cannot_find_customer_id'), $email));
 							} else {
 								$this->mi->setMauticContactIdToCustomerId($customer_id, $mautic_contact_id);
+								$this->incrementSessionParam('contacts_synced');
 								$this->ml->write(sprintf($this->language->get('text_customer_exported'), $customer_id, $mautic_contact_id));
 							}
 						}
@@ -377,6 +399,7 @@ class ControllerExtensionModuleMauticIntegration extends Controller {
 					
 					if (isset($response['errors'])) {
 						foreach ($response['errors'] as $key => $error) {
+							$this->incrementSessionParam('contacts_not_synced');
 							$this->ml->write($this->language->get('error_common')  . str_replace(["\n","\r\n"], '', $error['message']));
 						}
 					}
@@ -385,15 +408,22 @@ class ControllerExtensionModuleMauticIntegration extends Controller {
 				}
 			}
 			
-			$synced = isset($this->session->data['contacts_synced']) ? $this->session->data['contacts_synced'] : 0;
-			unset($this->session->data['contacts_synced']);
+			$not_synced = $this->getSessionParam('contacts_not_synced');
+
+			if ($not_synced) {
+				$this->session->data['error'] =  sprintf($this->language->get('text_not_synchronized'), $not_synced);
+			}
+
+			$synced = $this->getSessionParam('contacts_synced');
 			
 			if ($synced) {
 				$this->session->data['success'] =  sprintf($this->language->get('text_synchronized'), $synced);
 			} else {
-				$this->session->data['success'] =  $this->language->get('text_already_synchronized');
+				if (!$not_synced) {
+					$this->session->data['success'] =  $this->language->get('text_already_synchronized');
+				}
 			}
-
+			
 			$this->ml->write($this->language->get('text_sync_ended'));
 
 		} else {

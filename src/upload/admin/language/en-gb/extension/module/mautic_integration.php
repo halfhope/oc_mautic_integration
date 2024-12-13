@@ -27,10 +27,10 @@ $_['text_fields_opencart']          = 'OpenCart fields';
 $_['text_api_credentials_help']     = 'Create new API instance in your Mautic dashboard Settings > Integrations > API Credentials. Use Redirect URI in field below for Redirect URI field in Mautic.';
 
 // Tabs
-$_['tab_authorization']             = 'Authorization';
-$_['tab_general']                   = 'General';
-$_['tab_contacts']                  = 'Contacts';
-$_['tab_fields']                    = 'Fields mapping';
+$_['tab_authorization']             = '[1] Authorization';
+$_['tab_general']                   = '[2] General';
+$_['tab_fields']                    = '[3] Fields mapping';
+$_['tab_contacts']                  = '[4] Contacts';
 $_['tab_event']                     = 'OpenCart events';
 $_['tab_webhook']                   = 'Mautic webhooks';
 $_['tab_log']                       = 'Log';
@@ -87,6 +87,7 @@ $_['text_success_authorized']       = 'Successfully authorized!';
 $_['text_cannot_authorize']         = 'Cannot authorize!';
 $_['text_already_synchronized']     = 'All data has already been synchronized.';
 $_['text_synchronized']             = '%s customers was been exported.';
+$_['text_not_synchronized']         = '%s customers was been NOT exported. See log for details.';
 $_['text_fields_fetched']           = 'Mautic fields successfully fetched';
 
 // Log
@@ -96,6 +97,7 @@ $_['text_sync_ended']               = '[SYNC] Synchronization ended.';
 $_['text_customer_exported']        = '[SYNC] Customer with customer_id: %s was been exported mautic_contact_id = %s';
 $_['error_invalid_email']           = '[SYNC][ERROR] Customer with customer_id %s have invalid email address %s.';
 $_['error_cannot_find_customer_id'] = '[SYNC][ERROR] Cannot find customer_id for email %s';
+$_['error_email_required']          = '[SYNC][ERROR] Customer with customer_id: %s have empty email address.';
 $_['error_common']                  = '[SYNC][ERROR] ';
 
 ?>
