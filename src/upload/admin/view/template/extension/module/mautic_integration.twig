@@ -1,0 +1,566 @@
+{{ header }}{{ column_left }}
+<div id="content">
+<style>
+html {
+	overflow-y:scroll;
+}
+button.btn {
+	outline: none !important;
+}
+#form-extension .nav-tabs {
+	margin-bottom: 1em;
+} 
+#form-extension .control-label {
+	padding-top:0;
+}
+#form-extension .form-group {
+	padding-top: 10px;
+	padding-bottom: 10px;
+	display: flex;
+	align-items: center;
+}
+#form-extension .alert {
+	margin-bottom: 0;
+}
+#form-extension .switch input[type="radio"] {
+	display:none;
+}
+#form-extension input[type="text"], #form-extension select {
+	height: 36.56px!important;
+}
+#form-extension textarea.mautic-log-textarea {
+	width: 100%;
+	height: 70vh;
+	font-family: Consolas;
+	font-size: 9pt;
+	word-break: break-all;
+	margin-top: 1em;
+}
+.row-controls .row{
+	margin-bottom:10px;
+}
+.well-sm .group-header {
+	padding: 5px 10px;
+	font-weight: 600;
+	text-transform: uppercase;
+	border-bottom: 1px solid #ddd;
+	border-top: 1px solid #ddd;
+	background: #eee;
+}
+.well-sm .checkbox-container {
+
+}
+.well-sm .checkbox-container label {
+	font-weight: 400;
+	display: flex;
+	flex-wrap: nowrap;
+	align-items: stretch;
+	justify-content: flex-start;
+	margin: 0;
+	padding: 4px 6px;
+	cursor: pointer;
+}
+.well-sm .checkbox-container label:hover {
+	background: #eee;
+}
+.well-sm .checkbox-container + .checkbox-container {
+	border-top: 1px solid #ddd;
+}
+.well-sm .checkbox-container input[type=checkbox] {
+	margin-right: .5em;
+}
+</style>
+	<div class="page-header">
+		<div class="container-fluid">
+			<div class="pull-right">
+				<button type="submit" form="form-extension" data-toggle="tooltip" title="{{ button_save }}" class="btn btn-primary"><i class="fa fa-save"></i></button>
+				<a href="{{ cancel }}" data-toggle="tooltip" title="{{ button_cancel }}" class="btn btn-default"><i class="fa fa-reply"></i></a>
+			</div>
+			<h1>{{ heading_title }}</h1>
+			<ul class="breadcrumb">
+				{% for breadcrumb in breadcrumbs %}
+				<li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+				{% endfor %}
+			</ul>
+		</div>
+	</div>
+	<div class="container-fluid">
+		{% if error_warning %}
+		<div class="alert alert-danger alert-dismissible" data-countdown><i class="fa fa-exclamation-circle"></i>&nbsp;<span class="countdown">[2]</span> {{ error_warning }}
+			<button type="button" class="close" data-dismiss="alert">&times;</button>
+		</div>
+		{% endif %}
+		{% if success %}
+		<div class="alert alert-success alert-dismissible" data-countdown><i class="fa fa-check-circle"></i>&nbsp;<span class="countdown">[2]</span> {{ success }}
+			<button type="button" class="close" data-dismiss="alert">&times;</button>
+		</div>
+		{% endif %}
+		<div class="panel panel-default">
+			<!-- <div class="panel-heading">
+				<h3 class="panel-title"><i class="fa fa-pencil"></i> {{ text_edit }}</h3><h3 class="panel-title pull-right">v{{ version }}</h3>
+			</div> -->
+			<div class="panel-body">
+				<form action="{{ action }}" method="post" enctype="multipart/form-data" id="form-extension" class="form-horizontal">
+					
+					<ul class="nav nav-tabs">
+						<li class="active"><a href="#tab-authorization" data-toggle="tab">{{ tab_authorization }}</a></li>
+						<li><a href="#tab-general" data-toggle="tab">{{ tab_general }}</a></li>
+						<li><a href="#tab-fields" data-toggle="tab">{{ tab_fields }}</a></li>
+						<li><a href="#tab-contacts" data-toggle="tab">{{ tab_contacts }}</a></li>
+						<li><a href="#tab-event" data-toggle="tab">{{ tab_event }}</a></li>
+						<li><a href="#tab-webhook" data-toggle="tab">{{ tab_webhook }}</a></li>
+						<li><a href="#tab-log" data-toggle="tab">{{ tab_log }}</a></li>
+					</ul>
+
+					<div class="tab-content">
+
+						<div class="tab-pane active" id="tab-authorization">
+							
+							<fieldset>
+								<legend>{{ text_authorization_settings }}</legend>
+
+								<div class="form-group">
+									<label for="mautic_auth_version" class="col-sm-2 control-label">{{ entry_auth_version }}</label>
+									<div class="col-sm-10">
+										<select name="mautic_auth_version" id="mautic_auth_version" class="form-control" readonly>
+											<option value="OAuth2" {{ mautic_auth_version == 'OAuth2' ? 'selected' : '' }}>OAuth2</option>
+										</select>
+									</div>
+								</div>
+
+								<div class="form-group">
+									<label for="mautic_redirect_uri" class="col-sm-2 control-label">{{ entry_redirect_uri }}</label>
+									<div class="col-sm-10">
+										<input type="text" id="mautic_redirect_uri" placeholder="{{ entry_redirect_uri }}" name="mautic_redirect_uri" value="{{ mautic_redirect_uri }}" class="form-control" readonly>
+									</div>
+								</div>								
+
+								<div class="form-group required">
+									<label for="mautic_base_url" class="col-sm-2 control-label">{{ entry_base_url }}</label>
+									<div class="col-sm-10">
+										<input type="text" id="mautic_base_url" placeholder="{{ entry_base_url }}" name="mautic_base_url" value="{{ mautic_base_url }}" class="form-control">
+									</div>
+								</div>
+
+								<div class="form-group required">
+									<label for="mautic_client_id" class="col-sm-2 control-label">{{ entry_client_id }}</label>
+									<div class="col-sm-10">
+										<input type="text" id="mautic_client_id" placeholder="{{ entry_client_id }}" name="mautic_client_id" value="{{ mautic_client_id }}" class="form-control">
+									</div>
+								</div>
+
+								<div class="form-group required">
+									<label for="mautic_client_secret" class="col-sm-2 control-label">{{ entry_client_secret }}</label>
+									<div class="col-sm-10">
+										<input type="text" id="mautic_client_secret" placeholder="{{ entry_client_secret }}" name="mautic_client_secret" value="{{ mautic_client_secret }}" class="form-control">
+									</div>
+								</div>
+
+								<div class="form-group">
+									<label for="mautic_login_button" class="col-sm-2 control-label">{{ entry_auth }}</label>
+									<div class="col-sm-10">
+										<button id="login_button" class="btn btn-primary" {{ mautic_base_url == '' ? 'disabled' : '' }}>{{ button_login }}</button>
+										<div class="pull-right">
+											<button id="mautic_reset_auth_session" class="btn btn-danger" {{ mautic_base_url == '' ? 'disabled' : '' }}>{{ button_reset_auth_session }}</button>
+											<button id="mautic_reset_connection_settings" class="btn btn-danger" {{ mautic_base_url == '' ? 'disabled' : '' }}>{{ button_reset_connection_settings }}</button>
+										</div>
+									</div>
+								</div>
+
+								{# auth actions #}
+							</fieldset>
+							
+							<fieldset>
+								
+								<legend>{{ text_authorization_values }}</legend>
+
+								<div class="form-group">
+									<label for="mautic_access_token" class="col-sm-2 control-label">{{ entry_access_token }}</label>
+									<div class="col-sm-10">
+										<input type="text" id="mautic_access_token" name="mautic_access_token" value="{{ mautic_access_token }}" class="form-control" readonly>
+									</div>
+								</div>
+
+								<div class="form-group">
+									<label for="mautic_access_token_expires_formatted" class="col-sm-2 control-label">{{ entry_access_token_expires }}</label>
+									<div class="col-sm-10">
+										<input type="hidden" name="mautic_access_token_expires" value="{{ mautic_access_token_expires }}">
+										<input type="text" id="mautic_access_token_expires_formatted" name="mautic_access_token_expires_formatted" value="{{ mautic_access_token_expires_formatted }}" class="form-control" readonly>
+									</div>
+								</div>
+
+
+								<div class="form-group">
+									<label for="mautic_access_token_type" class="col-sm-2 control-label">{{ entry_access_token_type }}</label>
+									<div class="col-sm-10">
+										<input type="text" id="mautic_access_token_type" name="mautic_access_token_type" value="{{ mautic_access_token_type }}" class="form-control" readonly>
+									</div>
+								</div>
+
+								<div class="form-group">
+									<label for="mautic_access_refresh_token" class="col-sm-2 control-label">{{ entry_access_refresh_token }}</label>
+									<div class="col-sm-10">
+										<input type="text" id="mautic_access_refresh_token" name="mautic_access_refresh_token" value="{{ mautic_access_refresh_token }}" class="form-control" readonly>
+									</div>
+								</div>
+
+							</fieldset>
+					
+						</div> {# .tab-pane#tab-authorization #}
+
+						<div class="tab-pane" id="tab-general">
+
+							<div class="form-group">
+								<label for="" class="col-sm-2 control-label">{{ entry_status }}</label>
+								<div class="col-sm-10">
+									
+									<div class="switch btn-group">
+										<label class="btn btn-default {{ mautic_status == 1 ? 'active' : '' }}" {{ mautic_status == 1 ? 'active' : '' }}>
+											<input type="radio" name="mautic_status" value="1" {{ mautic_status == 1 ? 'checked="checked"' : '' }}>{{ text_yes }}
+										</label>
+										<label class="btn btn-default {{ mautic_status == 2 ? 'active' : '' }}" {{ mautic_status == 2 ? 'active' : '' }}>
+											<input type="radio" name="mautic_status" value="2" {{ mautic_status == 2 ? 'checked="checked"' : '' }}>{{ text_no }}
+										</label>
+									</div>
+
+								</div>
+							</div>
+		
+						</div> {# #tab-general #}
+		  
+						<div class="tab-pane" id="tab-contacts">
+
+							<div class="form-group">
+								<label for="mautic_login_button" class="col-sm-2 control-label">{{ entry_auth }}</label>
+								<div class="col-sm-10">
+									<button id="mautic_sync_contacts" class="btn btn-primary" {{ mautic_access_token == '' ? 'disabled' : '' }}>{{ button_sync_contacts }}</button>
+								</div>
+							</div>
+		
+						</div> {# #tab-general #}
+		  
+						<div class="tab-pane" id="tab-event">
+
+							<div class="form-group">
+								<label for="" class="col-sm-2 control-label">{{ entry_event_triggers }}</label>
+								<div class="col-sm-10">
+									
+									<div class="well well-sm">
+										
+										{% for event_group_key, event_group in event_triggers %}
+											<div class="group-header">{{ event_group_key }}</div>
+											{% for event in event_group %}
+												<div class="checkbox-container">
+													<label>
+														{% if event.code in mautic_event_triggers %}
+														<input type="checkbox" name="mautic_event_triggers[]" value="{{ event.code }}" checked="checked" />
+														{{ event.name }}</font>
+														{% else %}
+														<input type="checkbox" name="mautic_event_triggers[]" value="{{ event.code }}" />
+														{{ event.name }}</font>
+														{% endif %}
+													</label> 
+												</div>
+											{% endfor %}
+										{% endfor %}
+										
+									</div>
+									
+									<a href="#" onclick="$(this).parent().find(':checkbox').prop('checked', true);return false;">{{ text_select_all }}</a> / <a href="#" onclick="$(this).parent().find(':checkbox').prop('checked', false);return false;">{{ text_unselect_all }}</a> / <a href="#" onclick="invertSelection(this);return false;">{{ text_invert_selection }}</a>
+
+								</div>
+							</div>
+							
+						</div>
+
+						<div class="tab-pane" id="tab-webhook">
+
+							<div class="form-group required">
+								<label for="mautic_webhook_secret" class="col-sm-2 control-label">{{ entry_webhook_secret }}</label>
+								<div class="col-sm-10">
+									<input type="text" id="mautic_webhook_secret" placeholder="{{ entry_webhook_secret }}" name="mautic_webhook_secret" value="{{ mautic_webhook_secret }}" class="form-control">
+								</div>
+							</div>
+
+							<div class="form-group">
+								<label for="" class="col-sm-2 control-label">{{ entry_webhooks }}</label>
+								<div class="col-sm-10">
+									<div class="well well-sm">
+										{% for webhook in webhooks %}
+										<div class="checkbox-container">
+											<label>
+												{% if webhook.code in mautic_webhooks %}
+												<input type="checkbox" name="mautic_webhooks[]" value="{{ webhook.code }}" checked="checked" />
+												{{ webhook.name }} -&nbsp;<font color="green">[{{ webhook.code }}]</font>
+												{% else %}
+												<input type="checkbox" name="mautic_webhooks[]" value="{{ webhook.code }}" />
+												{{ webhook.name }} -&nbsp;<font color="green">[{{ webhook.code }}]</font>
+												{% endif %}
+											</label> 
+										</div>
+										{% endfor %}
+									</div>
+									
+									<a href="#" onclick="$(this).parent().find(':checkbox').prop('checked', true);return false;">{{ text_select_all }}</a> / <a href="#" onclick="$(this).parent().find(':checkbox').prop('checked', false);return false;">{{ text_unselect_all }}</a> / <a href="#" onclick="invertSelection(this);return false;">{{ text_invert_selection }}</a>
+									
+									<div class="help-block">{{ webhook_link_example }}</div>
+
+								</div>
+							</div>
+						
+						</div>
+
+						<div class="tab-pane" id="tab-fields">
+
+							<input type="hidden" name="mautic_fields" value="{{ mautic_fields }}">
+
+							<div class="form-group">
+								<label for="#" class="col-sm-2 control-label">{{ button_fetch_mautic_fields }}</label>
+								<div class="col-sm-10">
+									<button id="mautic_fetch_mautic_fields" class="btn btn-primary" {{ mautic_access_token == '' ? 'disabled' : '' }}>{{ button_fetch_mautic_fields }}</button>
+								</div>
+							</div>
+
+
+							<div class="form-group">
+								<label for="" class="col-sm-2 control-label">{{ entry_fields_mapping }}</label>
+								<div class="col-sm-10 row-controls">
+									<div class="row">
+										<div class="col-sm-5">
+											<b>{{ text_fields_mautic }}</b>
+										</div>
+										<div class="col-sm-7">
+											<b>{{ text_fields_opencart }}</b>
+										</div>
+									</div>
+									{% set field_row = 0 %}
+									{% for field in mautic_fields_map %}
+									<div class="row">
+
+										<div class="col-sm-5">
+											<select class="form-control" name="mautic_fields_map[{{ field_row }}][m]">
+											{% for opt_group, mautic_field in mautic_fields_decoded %}
+												<optgroup label="{{ opt_group }}">
+												{% for m_field in mautic_field %}
+													{% if field.m == m_field.alias %}
+													<option value="{{ m_field.alias }}" selected>{{ m_field.label }}</option>
+													{% else %}
+													<option value="{{ m_field.alias }}">{{ m_field.label }}</option>													
+													{% endif %}
+												{% endfor %}
+												</optgroup>
+											{% endfor %}
+											</select>
+										</div>
+
+										<div class="col-sm-6">
+											<select class="form-control" name="mautic_fields_map[{{ field_row }}][o]">
+											{% for opt_group, opencart_field in opencart_fields %}
+												<optgroup label="{{ opt_group }}">
+												{% for o_field in opencart_field %}
+													{% if field.o == "#{opt_group}.#{o_field.code}" %}
+													<option value="{{ opt_group }}.{{ o_field.code }}" selected>{{ o_field.name }} {{ o_field.rc is defined ? '*' : '' }}</option>
+													{% else %}
+													<option value="{{ opt_group }}.{{ o_field.code }}">{{ o_field.name }} {{ o_field.rc is defined ? '*' : '' }}</option>													
+													{% endif %}
+												{% endfor %}
+											{% endfor %}
+											</select>
+										</div>
+
+										<div class="col-sm-1">
+											<button class="btn btn-danger button_remove_parent_row"><i class="fa fa-trash"></i></button>
+										</div>
+
+									</div>
+									{% set field_row = field_row + 1 %}
+									{% endfor %}
+
+									<button class="btn btn-success btn-sm" id="button_add_mautic_field">{{ button_add }}</button>
+
+									<div class="help-block">{{ text_webhook_help }}</div>
+								</div>
+							</div>
+
+						</div>
+
+						<div class="tab-pane" id="tab-log">
+
+							<button class="btn btn-success" id="button-log-observe" data-target="#mautic-log" data-log="api"><i class="fa fa-refresh"></i></button>
+							<button class="btn btn-danger" id="button-log-clear" data-target="#mautic-log" data-log="api"><i class="fa fa-eraser"></i></button>
+
+							<textarea class="form-control mautic-log-textarea" name="mautic_log" id="mautic-log" readonly></textarea>
+							
+						</div>
+		
+					</div> {# .tab-content #}
+
+				</form>
+			</div>
+		</div>
+	</div>
+</div>
+<script>
+function _stop(event) {
+	event.preventDefault();
+	event.stopPropagation();
+}
+
+function invertSelection(sender) {
+	$.each($(sender).closest('.form-group').find('input[type=checkbox]'), (index, value) => {
+		$(value).prop('checked', !$(value).prop('checked'));
+	});
+}
+
+let logObserver = {};
+let field_row = {{ field_row }};
+
+$(document).ready(() => {
+	{# $('[data-countdown]').each((index, value) => {
+		let tid = setInterval(() => {
+			let current = parseInt($(value).find('.countdown').text().match(/(\d+)/));
+			$(value).find('.countdown').text('[' + (current - 1) + ']');
+			if (current == 1) {
+				clearInterval(tid);
+				$(value).remove();
+			}
+		}, 1000);
+	}); #}
+	$('#login_button').on('click', (event) => {
+		_stop(event);
+		window.location.href = '{{ mautic_auth_url }}';
+	});
+	$('#mautic_reset_auth_session').on('click', (event) => {
+		_stop(event);
+		window.location.href = '{{ mautic_reset_auth_session }}';
+	});
+	$('#mautic_sync_contacts').on('click', (event) => {
+		_stop(event);
+		window.location.href = '{{ mautic_sync_contacts }}';
+	});
+	$('#mautic_reset_connection_settings').on('click', (event) => {
+		_stop(event);
+		window.location.href = '{{ mautic_reset_connection_settings }}';
+	});
+	
+	$('#mautic_fetch_mautic_fields').on('click', (event) => {
+		_stop(event);
+		window.location.href = '{{ mautic_fetch_mautic_fields }}';
+	});
+	
+	$('#button-log-clear').on('click', (event) => {
+		_stop(event);
+		const target = $(event.currentTarget).data('target');
+
+		$.ajax({
+			type: "POST",
+			url: '{{ clear_log }}',
+			success: function (response) {
+				if (response.success) {
+					$(target).val(response.success);
+				} else if (response.error) {
+					$(target).val(response.error);
+				} else {
+					alert('Oops... Something happened');
+				}
+			}
+		});
+	});
+
+	$('#button-log-observe').on('click', (event) => {
+		_stop(event);
+
+		const target = $(event.currentTarget).data('target');
+		const $button = $(event.currentTarget);
+
+		const startLogObserver = function() {
+			$button.html('<i class="fa fa-pause"></i>');
+			
+			updateLog();
+			logObserver = setInterval(() => {
+				updateLog();
+			}, 5000);
+		}
+
+		const stopLogObserver = function() {
+			$button.html('<i class="fa fa-refresh"></i>');
+
+			clearInterval(logObserver);
+			logObserver = null;
+		}
+
+		const updateLog = function () {
+			$.ajax({
+				type: "POST",
+				url: '{{ fetch_log }}',
+				success: function (response) {
+					if (response.success) {
+						$(target).val(response.success);
+					} else if (response.error) {
+						stopLogObserver(logObserver);
+						$(target).val(response.error);
+					} else {
+						stopLogObserver(logObserver);
+						alert('Oops... Something happened');
+					}
+				}
+			});
+		};
+		logObserver ? stopLogObserver(logObserver) : startLogObserver(); 
+	});
+
+	$('#form-extension').delegate('.button_remove_parent_row', 'click', function(event) {
+		_stop(event);
+		$(event.currentTarget).parents('.row').remove();
+	});
+
+	$('#button_add_mautic_field').on('click', function(event) {
+		_stop(event);
+		html = '';
+		html += '<div class="row">';
+
+		html += '	<div class="col-sm-5">';
+		html += '		<select class="form-control" name="mautic_fields_map['+ field_row +'][m]">';		
+		{% for opt_group, mautic_field in mautic_fields_decoded %}
+		html += '			<optgroup label="{{ opt_group }}">';
+		{% for field in mautic_field %}
+		html += '				<option value="{{ field.alias }}">{{ field.label }}</option>';
+		{% endfor %}
+		html += '			</optgroup>';		
+		{% endfor %}
+		html += '		</select>';
+		html += '	</div>';
+
+		html += '	<div class="col-sm-6">';
+		html += '		<select class="form-control" name="mautic_fields_map['+ field_row +'][o]">';
+		
+		{% for opt_group, opencart_field in opencart_fields %}
+		html += '			<optgroup label="{{ opt_group }}">';
+		{% for field in opencart_field %}
+		html += '			<option value="{{ opt_group }}.{{ field.code }}">{{ field.name }}</option>';		
+		{% endfor %}
+		html += '			</optgroup>';	
+		{% endfor %}
+		html += '		</select>';
+		html += '	</div>';
+
+		html += '	<div class="col-sm-1">';
+		html += '		<button class="btn btn-danger button_remove_parent_row"><i class="fa fa-trash"></i></button>';
+		html += '	</div>';
+
+		html += '</div>';
+
+		field_row++;
+
+		$(event.currentTarget).before(html);
+	});
+
+	$('#form-extension').delegate('.switch > label', 'click', function(e) {
+		$(this).closest('.switch').find('label').removeClass('active');
+		$(this).toggleClass('active');
+		$(this).find('input').prop('checked', true).trigger('change');
+	});
+
+});
+</script>
+{{ footer }}

@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8"?>
+<modification>
+	<name>Mautic integration</name>
+	<code>mautic_integration/eventHandler</code>
+	<version>1.0</version>
+	<author>halfhope</author>
+	<link>http://shtt.blog</link>
+	<file path="catalog/model/account/customer.php">
+		<!-- newCustomer -->
+		<operation>
+			<search>
+				<![CDATA[public function addCustomer($data) {]]>
+			</search>
+			<add position="after" offset="18">
+				<![CDATA[
+				// mautic_integration
+				$this->load->controller('extension/module/mautic_integration/eventHandler', ['newCustomer', $customer_id]);
+				// mautic_integration
+				]]>
+			</add>
+		</operation>
+		<!-- editCustomer -->
+		<operation>
+			<search>
+				<![CDATA[public function editCustomer($customer_id, $data) {]]>
+			</search>
+			<add position="after" offset="1">
+				<![CDATA[
+				// mautic_integration
+				$this->load->controller('extension/module/mautic_integration/eventHandler', ['editCustomer', $customer_id]);
+				// mautic_integration
+				]]>
+			</add>
+		</operation>
+		<!-- userSubscribe/userUnsubscribe -->
+		<operation>
+			<search>
+				<![CDATA[public function editNewsletter($newsletter) {]]>
+			</search>
+			<add position="after" offset="1">
+				<![CDATA[
+				// mautic_integration
+				$this->load->controller('extension/module/mautic_integration/eventHandler', [($newsletter) ? 'userSubscribe' : 'userUnsubscribe', $this->customer->getId()]);
+				// mautic_integration
+				]]>
+			</add>
+		</operation>
+	</file> 
+
+	<file path="catalog/model/account/address.php">
+		<!-- addAddress -->
+		<operation>
+			<search>
+				<![CDATA[public function addAddress($customer_id, $data) {]]>
+			</search>
+			<add position="after" offset="8">
+				<![CDATA[
+				// mautic_integration
+				$this->load->controller('extension/module/mautic_integration/eventHandler', ['addAddress', $customer_id]);
+				// mautic_integration
+				]]>
+			</add>
+		</operation>
+		<!-- editAddress -->
+		<operation>
+			<search>
+				<![CDATA[public function editAddress($address_id, $data) {]]>
+			</search>
+			<add position="after" offset="5">
+				<![CDATA[
+				// mautic_integration
+				$this->load->controller('extension/module/mautic_integration/eventHandler', ['editAddress', $this->customer->getId()]);
+				// mautic_integration
+				]]>
+			</add>
+		</operation>
+	</file> 
+	
+	<file path="admin/model/customer/customer.php">
+		<!-- adminNewCustomer -->
+		<operation>
+			<search>
+				<![CDATA[public function addCustomer($data) {]]>
+			</search>
+			<add position="after" offset="20">
+				<![CDATA[
+				// mautic_integration
+				$this->load->controller('extension/module/mautic_integration/eventHandler', ['adminNewCustomer', $customer_id]);
+				// mautic_integration
+				]]>
+			</add>
+		</operation>
+		<!-- adminEditCustomer -->
+		<operation>
+			<search>
+				<![CDATA[public function editCustomer($customer_id, $data) {]]>
+			</search>
+			<add position="after" offset="23">
+				<![CDATA[
+				// mautic_integration
+				$this->load->controller('extension/module/mautic_integration/eventHandler', ['adminEditCustomer', $customer_id]);
+				// mautic_integration
+				]]>
+			</add>
+		</operation>
+		<!-- adminDeleteCustomer -->
+		<operation>
+			<search>
+				<![CDATA[public function deleteCustomer($customer_id) {]]>
+			</search>
+			<add position="after" offset="9">
+				<![CDATA[
+				// mautic_integration
+				$this->load->controller('extension/module/mautic_integration/eventHandler', ['adminDeleteCustomer', $customer_id]);
+				// mautic_integration
+				]]>
+			</add>
+		</operation>
+	</file> 
+
+</modification>

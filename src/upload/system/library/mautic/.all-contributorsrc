@@ -1,0 +1,90 @@
+{
+  "files": [
+    "README.md"
+  ],
+  "imageSize": 100,
+  "commit": false,
+  "contributors": [
+    {
+      "login": "kuzmany",
+      "name": "Zdeno Kuzmany",
+      "avatar_url": "https://avatars.githubusercontent.com/u/462477?v=4",
+      "profile": "https://webmecanik.com",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "dlopez-akalam",
+      "name": "dlopez-akalam",
+      "avatar_url": "https://avatars.githubusercontent.com/u/6641589?v=4",
+      "profile": "https://github.com/dlopez-akalam",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "mollux",
+      "name": "mollux",
+      "avatar_url": "https://avatars.githubusercontent.com/u/3983285?v=4",
+      "profile": "https://github.com/mollux",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "LadySolveig",
+      "name": "Martina  Scholz",
+      "avatar_url": "https://avatars.githubusercontent.com/u/64533137?v=4",
+      "profile": "https://github.com/LadySolveig",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "escopecz",
+      "name": "John Linhart",
+      "avatar_url": "https://avatars.githubusercontent.com/u/1235442?v=4",
+      "profile": "http://johnlinhart.com",
+      "contributions": [
+        "review"
+      ]
+    },
+    {
+      "login": "Rocksheep",
+      "name": "Marinus van Velzen",
+      "avatar_url": "https://avatars.githubusercontent.com/u/1311371?v=4",
+      "profile": "https://github.com/Rocksheep",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "PierreAmmeloot",
+      "name": "Pierre Ammeloot",
+      "avatar_url": "https://avatars.githubusercontent.com/u/4603318?v=4",
+      "profile": "https://pierre.ammeloot.fr",
+      "contributions": [
+        "userTesting"
+      ]
+    },
+    {
+      "login": "matbcvo",
+      "name": "Martin Vooremäe",
+      "avatar_url": "https://avatars.githubusercontent.com/u/1006437?v=4",
+      "profile": "https://matbcvo.github.io",
+      "contributions": [
+        "code",
+        "test"
+      ]
+    }
+  ],
+  "contributorsPerLine": 7,
+  "projectName": "api-library",
+  "projectOwner": "mautic",
+  "repoType": "github",
+  "repoHost": "https://github.com",
+  "skipCi": true,
+  "commitConvention": "angular",
+  "commitType": "docs"
+}
