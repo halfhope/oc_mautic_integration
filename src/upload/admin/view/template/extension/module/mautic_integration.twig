@@ -76,7 +76,7 @@ button.btn {
 				<button type="submit" form="form-extension" data-toggle="tooltip" title="{{ button_save }}" class="btn btn-primary"><i class="fa fa-save"></i></button>
 				<a href="{{ cancel }}" data-toggle="tooltip" title="{{ button_cancel }}" class="btn btn-default"><i class="fa fa-reply"></i></a>
 			</div>
-			<h1>{{ heading_title }}</h1>
+			<h1>{{ heading_title }}&nbsp;v{{ version }}</h1>
 			<ul class="breadcrumb">
 				{% for breadcrumb in breadcrumbs %}
 				<li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
@@ -96,9 +96,6 @@ button.btn {
 		</div>
 		{% endif %}
 		<div class="panel panel-default">
-			<!-- <div class="panel-heading">
-				<h3 class="panel-title"><i class="fa fa-pencil"></i> {{ text_edit }}</h3><h3 class="panel-title pull-right">v{{ version }}</h3>
-			</div> -->
 			<div class="panel-body">
 				<form action="{{ action }}" method="post" enctype="multipart/form-data" id="form-extension" class="form-horizontal">
 					
@@ -119,6 +116,8 @@ button.btn {
 							<fieldset>
 								<legend>{{ text_authorization_settings }}</legend>
 
+								<div class="help-block">{{ text_api_credentials_help }}</div>
+								
 								<div class="form-group">
 									<label for="mautic_auth_version" class="col-sm-2 control-label">{{ entry_auth_version }}</label>
 									<div class="col-sm-10">
@@ -133,7 +132,7 @@ button.btn {
 									<div class="col-sm-10">
 										<input type="text" id="mautic_redirect_uri" placeholder="{{ entry_redirect_uri }}" name="mautic_redirect_uri" value="{{ mautic_redirect_uri }}" class="form-control" readonly>
 									</div>
-								</div>								
+								</div>
 
 								<div class="form-group required">
 									<label for="mautic_base_url" class="col-sm-2 control-label">{{ entry_base_url }}</label>
@@ -143,14 +142,14 @@ button.btn {
 								</div>
 
 								<div class="form-group required">
-									<label for="mautic_client_id" class="col-sm-2 control-label">{{ entry_client_id }}</label>
+									<label for="mautic_client_id" class="col-sm-2 control-label"><span data-toggle="tooltip" title="{{ entry_client_id_help }}">{{ entry_client_id }}</span></label>
 									<div class="col-sm-10">
 										<input type="text" id="mautic_client_id" placeholder="{{ entry_client_id }}" name="mautic_client_id" value="{{ mautic_client_id }}" class="form-control">
 									</div>
 								</div>
 
 								<div class="form-group required">
-									<label for="mautic_client_secret" class="col-sm-2 control-label">{{ entry_client_secret }}</label>
+									<label for="mautic_client_secret" class="col-sm-2 control-label"><span data-toggle="tooltip" title="{{ entry_client_secret_help }}">{{ entry_client_secret }}</span></label>
 									<div class="col-sm-10">
 										<input type="text" id="mautic_client_secret" placeholder="{{ entry_client_secret }}" name="mautic_client_secret" value="{{ mautic_client_secret }}" class="form-control">
 									</div>
@@ -162,7 +161,6 @@ button.btn {
 										<button id="login_button" class="btn btn-primary" {{ mautic_base_url == '' ? 'disabled' : '' }}>{{ button_login }}</button>
 										<div class="pull-right">
 											<button id="mautic_reset_auth_session" class="btn btn-danger" {{ mautic_base_url == '' ? 'disabled' : '' }}>{{ button_reset_auth_session }}</button>
-											<button id="mautic_reset_connection_settings" class="btn btn-danger" {{ mautic_base_url == '' ? 'disabled' : '' }}>{{ button_reset_connection_settings }}</button>
 										</div>
 									</div>
 								</div>
@@ -211,7 +209,7 @@ button.btn {
 						<div class="tab-pane" id="tab-general">
 
 							<div class="form-group">
-								<label for="" class="col-sm-2 control-label">{{ entry_status }}</label>
+								<label for="" class="col-sm-2 control-label"><span data-toggle="tooltip" title="{{ entry_status_help }}">{{ entry_status }}</span></label>
 								<div class="col-sm-10">
 									
 									<div class="switch btn-group">
@@ -231,9 +229,9 @@ button.btn {
 						<div class="tab-pane" id="tab-contacts">
 
 							<div class="form-group">
-								<label for="mautic_login_button" class="col-sm-2 control-label">{{ entry_auth }}</label>
+								<label for="mautic_login_button" class="col-sm-2 control-label"><span data-toggle="tooltip" title="{{ entry_sync_help }}">{{ entry_sync }}</span></label>
 								<div class="col-sm-10">
-									<button id="mautic_sync_contacts" class="btn btn-primary" {{ mautic_access_token == '' ? 'disabled' : '' }}>{{ button_sync_contacts }}</button>
+									<button id="mautic_sync_contacts" class="btn btn-primary" {{ mautic_access_token == '' ? 'disabled' : '' }}>{{ button_sync_contacts }}</button>									
 								</div>
 							</div>
 		
@@ -242,7 +240,7 @@ button.btn {
 						<div class="tab-pane" id="tab-event">
 
 							<div class="form-group">
-								<label for="" class="col-sm-2 control-label">{{ entry_event_triggers }}</label>
+								<label for="" class="col-sm-2 control-label"><span data-toggle="tooltip" title="{{ entry_event_triggers_help }}">{{ entry_event_triggers }}</span></label>
 								<div class="col-sm-10">
 									
 									<div class="well well-sm">
@@ -274,16 +272,9 @@ button.btn {
 						</div>
 
 						<div class="tab-pane" id="tab-webhook">
-
-							<div class="form-group required">
-								<label for="mautic_webhook_secret" class="col-sm-2 control-label">{{ entry_webhook_secret }}</label>
-								<div class="col-sm-10">
-									<input type="text" id="mautic_webhook_secret" placeholder="{{ entry_webhook_secret }}" name="mautic_webhook_secret" value="{{ mautic_webhook_secret }}" class="form-control">
-								</div>
-							</div>
-
+							
 							<div class="form-group">
-								<label for="" class="col-sm-2 control-label">{{ entry_webhooks }}</label>
+								<label for="" class="col-sm-2 control-label"><span data-toggle="tooltip" title="{{ entry_webhooks_help }}">{{ entry_webhooks }}</span></label>
 								<div class="col-sm-10">
 									<div class="well well-sm">
 										{% for webhook in webhooks %}
@@ -291,10 +282,10 @@ button.btn {
 											<label>
 												{% if webhook.code in mautic_webhooks %}
 												<input type="checkbox" name="mautic_webhooks[]" value="{{ webhook.code }}" checked="checked" />
-												{{ webhook.name }} -&nbsp;<font color="green">[{{ webhook.code }}]</font>
+												{{ webhook.name }} -&nbsp;<font color="green">{{ webhook.code }}</font>
 												{% else %}
 												<input type="checkbox" name="mautic_webhooks[]" value="{{ webhook.code }}" />
-												{{ webhook.name }} -&nbsp;<font color="green">[{{ webhook.code }}]</font>
+												{{ webhook.name }} -&nbsp;<font color="green">{{ webhook.code }}</font>
 												{% endif %}
 											</label> 
 										</div>
@@ -308,6 +299,13 @@ button.btn {
 								</div>
 							</div>
 						
+							<div class="form-group required">
+								<label for="mautic_webhook_secret" class="col-sm-2 control-label">{{ entry_webhook_secret }}</label>
+								<div class="col-sm-10">
+									<input type="text" id="mautic_webhook_secret" placeholder="{{ entry_webhook_secret }}" name="mautic_webhook_secret" value="{{ mautic_webhook_secret }}" class="form-control">
+								</div>
+							</div>
+
 						</div>
 
 						<div class="tab-pane" id="tab-fields">
@@ -323,7 +321,7 @@ button.btn {
 
 
 							<div class="form-group">
-								<label for="" class="col-sm-2 control-label">{{ entry_fields_mapping }}</label>
+								<label for="" class="col-sm-2 control-label"><span data-toggle="tooltip" title="{{ entry_fields_mapping_help }}">{{ entry_fields_mapping }}</span></label>
 								<div class="col-sm-10 row-controls">
 									<div class="row">
 										<div class="col-sm-5">
@@ -376,9 +374,8 @@ button.btn {
 									{% set field_row = field_row + 1 %}
 									{% endfor %}
 
-									<button class="btn btn-success btn-sm" id="button_add_mautic_field">{{ button_add }}</button>
+									<button class="btn btn-success" id="button_add_mautic_field" {{ mautic_fields is empty ? 'disabled' : '' }}>{{ button_add }}</button>
 
-									<div class="help-block">{{ text_webhook_help }}</div>
 								</div>
 							</div>
 
@@ -412,7 +409,7 @@ function invertSelection(sender) {
 	});
 }
 
-let logObserver = {};
+let logObserver = null;
 let field_row = {{ field_row }};
 
 $(document).ready(() => {
@@ -438,11 +435,6 @@ $(document).ready(() => {
 		_stop(event);
 		window.location.href = '{{ mautic_sync_contacts }}';
 	});
-	$('#mautic_reset_connection_settings').on('click', (event) => {
-		_stop(event);
-		window.location.href = '{{ mautic_reset_connection_settings }}';
-	});
-	
 	$('#mautic_fetch_mautic_fields').on('click', (event) => {
 		_stop(event);
 		window.location.href = '{{ mautic_fetch_mautic_fields }}';

@@ -5,14 +5,26 @@
 
 use \Mautic\Auth\ApiAuth;
 use \Mautic\MauticApi;
+use \Mautic\MauticOcIntegration;
 
 class ControllerExtensionModuleMauticIntegration extends Controller {
 
-	public 	$_route 		= 'extension/module/mautic_integration';
-	public 	$_model 		= 'model_extension_module_mautic_integration';
-	private $_version 		= '1.0';
+	private $_route = 'extension/module/mautic_integration';
+	private $_model = 'model_extension_module_mautic_integration';
+	private $_version = '1.1';
+
+	private $ml; // Mautic Log instance
+	private $mi; // Mautic Integration library instance 
 
 	private $error = [];
+	
+	public function __construct($registry) {
+		parent::__construct($registry);
+		$this->load->config('mautic');
+
+		$this->ml = new Log($this->config->get('mautic_log_filename'));
+		$this->mi = new MauticOcIntegration($registry);
+	}
 
 	public function install() {
 		$this->load->model($this->_route);
@@ -93,10 +105,9 @@ class ControllerExtensionModuleMauticIntegration extends Controller {
 		// readonly fields
 		
 		$data['mautic_auth_url'] = html_entity_decode($this->url->link($this->_route . '/authMautic', 'user_token=' . $this->session->data['user_token'], true), ENT_QUOTES, 'UTF-8');
-		$data['mautic_sync_contacts'] = html_entity_decode($this->url->link($this->_route . '/syncContacts', 'user_token=' . $this->session->data['user_token'], true), ENT_QUOTES, 'UTF-8');
+		$data['mautic_sync_contacts'] = html_entity_decode($this->url->link($this->_route . '/exportContacts', 'user_token=' . $this->session->data['user_token'], true), ENT_QUOTES, 'UTF-8');
 		$data['mautic_fetch_mautic_fields'] = html_entity_decode($this->url->link($this->_route . '/fetchMauticFields', 'user_token=' . $this->session->data['user_token'], true), ENT_QUOTES, 'UTF-8');
 		$data['mautic_reset_auth_session'] = html_entity_decode($this->url->link($this->_route . '/resetAuthSession', 'user_token=' . $this->session->data['user_token'], true), ENT_QUOTES, 'UTF-8');
-		$data['mautic_reset_connection_settings'] = html_entity_decode($this->url->link($this->_route . '/resetConectionSettings', 'user_token=' . $this->session->data['user_token'], true), ENT_QUOTES, 'UTF-8');
 			
 		$data['mautic_access_token'] = $this->config->get('mautic_access_token');
 		
@@ -137,7 +148,7 @@ class ControllerExtensionModuleMauticIntegration extends Controller {
 		$data['webhook_link_example'] = str_replace(
 			'admin/', 
 			'',
-			$this->url->link('extension/module/mautic_integration/webHookHandler', 'webhook=<font color="green">[webhookCode]</font>&secret=<font color="blue">[yourSecretHash]</font>', true)
+			$this->url->link('extension/module/mautic_integration/webHookHandler', 'webhook=<font color="green">webhookCode</font>', true)
 		);
 
 		$data['event_triggers'] = $this->config->get('static_events');
@@ -205,31 +216,12 @@ class ControllerExtensionModuleMauticIntegration extends Controller {
 		
 		$this->load->model('setting/setting');
 	
+		$store_id = 0;
+
 		foreach ($settings as $value) {
 			$this->model_setting_setting->editSettingValue('mautic', $value,  '', $store_id);
 		}
 	
-		$this->session->data['success'] = $this->language->get('text_success_reseted');
-
-		$this->response->redirect($this->url->link($this->_route, 'user_token=' . $this->session->data['user_token'], true));
-	}
-	
-	public function resetConectionSettings() {
-		$this->load->language($this->_route);
-		
-		$settings = [
-			'mautic_base_url',
-			'mautic_auth_version',
-			'mautic_client_id',
-			'mautic_client_secret',
-		];
-		
-		$this->load->model('setting/setting');
-	
-		foreach ($settings as $value) {
-			$this->model_setting_setting->editSettingValue('mautic', $value,  '', $store_id);
-		}
-
 		$this->session->data['success'] = $this->language->get('text_success_reseted');
 
 		$this->response->redirect($this->url->link($this->_route, 'user_token=' . $this->session->data['user_token'], true));
@@ -286,7 +278,7 @@ class ControllerExtensionModuleMauticIntegration extends Controller {
 					$response = ['success' => $result];
 				}
 			} else {
-				$response = ['error' => 'Mautic log not found!'];
+				$response = ['error' => $this->language->get('error_log_not_found')];
 			}
 
 			$this->response->addHeader('Content-Type: application/json');
@@ -320,74 +312,92 @@ class ControllerExtensionModuleMauticIntegration extends Controller {
 		$this->response->redirect($this->url->link($this->_route, 'user_token=' . $this->session->data['user_token'], true));
 	}
 
-	private function mergeFieldDataMapping($map, $data, $invert = false) {
-		$result = [];
-		foreach ($map as $field_data) {
-			$m_field = $field_data['m'];
-			$o_field = $field_data['o'];
-
-			if ($invert) {
-				$result[$o_field] = $data[$m_field];
-			} else {
-				$result[$m_field] = $data[$o_field];
-			}
-		}
-		return $result;
-	}
-
-	public function syncContacts() {
+	public function exportContacts() {
+		$this->load->model($this->_route);
 		$this->load->language($this->_route);
+
+		// Increase execution time
+		set_time_limit(0);
+		ini_set('max_execution_time', 0);
 		
 		$auth = $this->apiAuth();
 
 		if ($auth->isAuthorized()) {
-			$this->session->data['success'] = $this->language->get('text_success_authorized');
+
+			$this->ml->write($this->language->get('text_sync_started'));
 
 			$apiUrl = $this->config->get('mautic_base_url') . '/api/';
 
 			$api        = new MauticApi();
 			$contactApi = $api->newApi('contacts', $auth, $apiUrl);
 			
-			$subscribed_only = true;
-			$this->load->model($this->_route);
-			$customers = $this->{$this->_model}->getAllCustomersData($subscribed_only);
-			
+			$subscribers_only = true;
+			$synced = false;
+			$customers_count = $this->mi->getCustomersCount($subscribers_only, $synced);
+			$customers_ids = $this->mi->getCustomersIds($subscribers_only, $synced);
+
 			$mautic_fields_map = $this->config->get('mautic_fields_map');
 
-			$already_synchronized = 0;
-
 			$contacts = [];
-			foreach ($customers as $customer) {
-				$contact = $this->mergeFieldDataMapping($mautic_fields_map, $customer, false);
-				
-				if ((int) $customer['customer.mautic_contact_id'] === 0) {
-					$contacts[] = $contact;
+			$last_contact = end($customers_ids);
+			foreach ($customers_ids as $key => $value) {
+				$customer_id = $value['customer_id'];
+				$customer_data = $this->mi->getCustomerData($customer_id);
+
+				if (isset($customer_data['customer.email'])) {
+					if (!filter_var($customer_data['customer.email'], FILTER_VALIDATE_EMAIL)) {
+						$this->ml->write(sprintf($this->language->get('error_invalid_email'), $customer_id, $customer_data['customer.email']));
+						continue;
+					}
+				}
+
+				if (!isset($this->session->data['contacts_synced'])) {
+					$this->session->data['contacts_synced'] = 1;
 				} else {
-					$already_synchronized++;
+					$this->session->data['contacts_synced']++;
+				}
+
+				$contacts[] = $this->mi->mergeFieldDataMapping($mautic_fields_map, $customer_data, false);
+				if (count($contacts) == 200 || $value == $last_contact) {
+
+					$response = $contactApi->createBatch($contacts);
+					if (isset($response['contacts'])) {
+						foreach ($response['contacts'] as $mautic_contact) {
+							$mautic_contact_id = $mautic_contact['id'];
+							$email = $mautic_contact['fields']['core']['email']['value'];
+							$customer_id = $this->mi->getCustomerIdByEmail($email);
+							if ($customer_id === false) {
+								$this->ml->write(sprintf($this->language->get('error_cannot_find_customer_id'), $email));
+							} else {
+								$this->mi->setMauticContactIdToCustomerId($customer_id, $mautic_contact_id);
+								$this->ml->write(sprintf($this->language->get('text_customer_exported'), $customer_id, $mautic_contact_id));
+							}
+						}
+					}
+					
+					if (isset($response['errors'])) {
+						foreach ($response['errors'] as $key => $error) {
+							$this->ml->write($this->language->get('error_common')  . str_replace(["\n","\r\n"], '', $error['message']));
+						}
+					}
+					
+					$contacts = [];
 				}
 			}
 			
-			$response = $contactApi->createBatch($contacts);
-
-			if (isset($response['contacts'])) {
-				foreach ($response['contacts'] as $mautic_contact) {
-					$mautic_contact_id = $mautic_contact['id'];
-					$email = $mautic_contact['fields']['core']['email']['value'];
-					$customer_id = $this->{$this->_model}->getCustomerIdByEmail($email);
-
-					$this->{$this->_model}->setMauticContactIdToCustomerId($customer_id, $mautic_contact_id);
-				}
-				$synchronized = count($response['contacts']);
+			$synced = isset($this->session->data['contacts_synced']) ? $this->session->data['contacts_synced'] : 0;
+			unset($this->session->data['contacts_synced']);
+			
+			if ($synced) {
+				$this->session->data['success'] =  sprintf($this->language->get('text_synchronized'), $synced);
 			} else {
-				$synchronized = 0;
+				$this->session->data['success'] =  $this->language->get('text_already_synchronized');
 			}
 
-			$success_sync = ($synchronized) ? "Successfully exported {$synchronized} contacts." : "";
-			$success_already = ($already_synchronized) ? "{$already_synchronized} contacts was been already synchronized" : "";
+			$this->ml->write($this->language->get('text_sync_ended'));
 
-			$this->session->data['success'] =  $success_sync . " " . $success_already;
 		} else {
-			$this->session->data['error'] = $this->language->get('text_cannot_authorize');
+			$this->session->data['error'] = $this->language->get('error_auth_failed');
 		}
 
 		$this->response->redirect($this->url->link($this->_route, 'user_token=' . $this->session->data['user_token'], true));
@@ -421,13 +431,13 @@ class ControllerExtensionModuleMauticIntegration extends Controller {
 				$store_id = 0;
 
 				$this->model_setting_setting->editSettingValue('mautic', 'mautic_fields', json_encode($mautic_fields), $store_id);
-
-				$this->session->data['success'] = $this->language->get('text_success_fetched');
+				
+				$this->session->data['success'] = $this->language->get('text_fields_fetched');
 			} else {
-				$this->session->data['error'] = $this->language->get('text_fields_empty');
+				$this->session->data['error'] = $this->language->get('error_fields_empty');
 			}
 		} else {
-			$this->session->data['error'] = $this->language->get('text_cannot_authorize');
+			$this->session->data['error'] = $this->language->get('error_auth_failed');
 		}
 		
 		$this->response->redirect($this->url->link($this->_route, 'user_token=' . $this->session->data['user_token'], true));
@@ -437,7 +447,7 @@ class ControllerExtensionModuleMauticIntegration extends Controller {
 		session_start();
 
 		$this->load->model($this->_route);
-		$settings = $this->{$this->_model}->getApiSettings();
+		$settings = $this->mi->getApiSettings();
 
 		$initAuth = new ApiAuth();
 		$auth     = @$initAuth->newAuth($settings);
@@ -450,8 +460,6 @@ class ControllerExtensionModuleMauticIntegration extends Controller {
 
 					$this->load->model('setting/setting');
 
-					$this->log->write(var_export($accessTokenData, true));
-
 					$store_id = 0;
 
 					$this->model_setting_setting->editSettingValue('mautic', 'mautic_access_token', 		$accessTokenData['access_token'], 	$store_id);
@@ -461,6 +469,7 @@ class ControllerExtensionModuleMauticIntegration extends Controller {
 				}
 				return $auth;
 			} else {
+				$this->session->data['error'] = $this->language->get('error_auth_failed');
 				return $auth;
 			}
 		} catch (Exception $e) {
